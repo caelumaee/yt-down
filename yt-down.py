@@ -1,7 +1,5 @@
 #first, install yt-dl: pip install yt-dlp
 import yt_dlp
-import os
-
 from tkinter import Tk, filedialog
 
 #ask the user for the YouTube URL
@@ -41,34 +39,65 @@ opcao = input("Escolha uma opção: ")
 match opcao:
     case "1":
         opts = {
-            'format': 'bestvideo+bestaudio/best',
+            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4',
             'outtmpl': f'{folder}/%(title)s.%(ext)s',   
         }
     case "2":
         opts = {
-            'format': 'bestvideo[height<=720]+bestaudio/best',
+            'format': 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/mp4',
             'outtmpl': f'{folder}/%(title)s.%(ext)s',   
         }
     case "3":
         opts = {
             'format': 'bestaudio/best',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-            }],
+            'writethumbnail': True,
+            'outtmpl': f'{folder}/%(title)s.%(ext)s',
+            'postprocessors': [
+                {
+                    'key': 'FFmpegThumbnailsConvertor',
+                    'format': 'jpg',
+                },
+                {
+                    'key': 'FFmpegExtractAudio',
+                    'preferredcodec': 'mp3',
+                },
+                {
+                    'key': 'EmbedThumbnail',
+                }
+            ],
             'postprocessor_args': {
-                'EmbedThumbnail': [
+                'ThumbnailsConvertor+FFmpeg_o': [
                     '-vf',
                     "crop='if(gt(ih,iw),iw,ih):if(gt(iw,ih),ih,iw)'"
                 ]
-            },
-            'outtmpl': f'{folder}/%(title)s.%(ext)s',   
+            }
         }
     case "4":
         opts = {
             'format': 'bestaudio[ext=m4a]/best',
-            'outtmpl': f'{folder}/%(title)s.%(ext)s',   
-        } 
+            'writethumbnail': True,
+            'outtmpl': f'{folder}/%(title)s.%(ext)s',
+
+            'postprocessors': [
+                {
+                    'key': 'FFmpegThumbnailsConvertor',
+                    'format': 'jpg',
+                },
+                {
+                    'key': 'EmbedThumbnail',
+                }
+            ],
+
+            'postprocessor_args': {
+                'ThumbnailsConvertor+FFmpeg_o': [
+                    '-vf',
+                    "crop='if(gt(ih,iw),iw,ih):if(gt(iw,ih),ih,iw)'"
+                ]
+            }
+        }
+    case _:
+        print("Opção inválida.")
+        exit()
 
 #Baixa o vídeo ou áudio usando yt-dlp
 with yt_dlp.YoutubeDL(opts) as ydl:
